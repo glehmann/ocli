@@ -1,3 +1,5 @@
+# ocli
+
 A simple, opinionated logger for command line tools
 
 `ocli` aims at a very simple thing: logging for CLI tools done right. It uses the
@@ -5,8 +7,6 @@ A simple, opinionated logger for command line tools
 at this time, just the expected log level.
 
 ## Features
-
- `ocli`:
 
 * logs everything to `stderr`. CLI tools are expected to be usable in a pipe. In that context,
   the messages addressed to the user must be written on `stderr` to have a chance to be read
@@ -96,3 +96,9 @@ fn main() {
     info!("while still being able to pipe stdout");
 }
 ```
+
+## License
+
+`ocli` is distributed under the terms of the MIT license.
+
+See [LICENSE](LICENSE) for details.
