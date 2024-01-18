@@ -41,6 +41,7 @@ fn main() {
      trace!("This is not printed");
 }
 ```
+![info example](info.png)
 
 ## Example with `Trace` log level
 
@@ -57,3 +58,9 @@ fn main() {
      trace!("This is printed to stderr, with the 'path(line): trace: ' prefix colored in magenta");
 }
 ```
+
+![trace example](trace.png)
+
+and a more realistic example with [hld](https://github.com/glehmann/hld):
+
+![hld trace](hld.png)
