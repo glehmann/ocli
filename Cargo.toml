@@ -9,7 +9,7 @@ repository = "https://github.com/glehmann/ocli.git"
 homepage = "https://github.com/glehmann/ocli.git"
 documentation = "https://github.com/glehmann/ocli.git"
 license = "MIT"
-keywords = ["terminal", "log", "logger", "logging", "cli", "command-line"]
+keywords = ["terminal", "log", "logger", "logging", "cli"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
