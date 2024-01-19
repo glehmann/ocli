@@ -2,20 +2,22 @@
 extern crate log;
 
 use clap::Parser;
+use clap_verbosity_flag::{InfoLevel, Verbosity};
 
 /// A demo of ocli with clap
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 pub struct Config {
     /// Log level
-    #[arg(short, long, default_value_t = log::Level::Info)]
-    pub log_level: log::Level,
+    #[command(flatten)]
+    pub verbose: Verbosity<InfoLevel>,
 }
 
 fn main() {
     let config = Config::parse();
-    ocli::init(config.log_level).unwrap();
-
+    if let Some(level) = config.verbose.log_level() {
+        ocli::init(level).unwrap();
+    }
     println!("this is on stdout — try to pipe it to another command like `grep` or `wc`");
     error!("log at error level on stderr");
     warn!("log at warn level on stderr");

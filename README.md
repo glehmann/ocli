@@ -67,6 +67,10 @@ and a more realistic example with [hld](https://github.com/glehmann/hld):
 
 ## Example with clap integration
 
+The log level can be configured with a command line argument, using the `clap` crate.
+Try running it with `cargo run --example cli -- --log-level trace` and change the log level
+to see the difference.
+
 ```rust
 #[macro_use]
 extern crate log;
@@ -86,7 +90,45 @@ fn main() {
     let config = Config::parse();
     ocli::init(config.log_level).unwrap();
 
-    println!("this is onstdout — try to pipe it to another command like `grep` or `wc`");
+    println!("this is on stdout — try to pipe it to another command like `grep` or `wc`");
+    error!("log at error level on stderr");
+    warn!("log at warn level on stderr");
+    info!("log at info level on stderr");
+    debug!("log at debug level on stderr");
+    trace!("log at trace level on stderr");
+    info!("the logs at any level are meant to inform the user");
+    info!("while still being able to pipe stdout");
+}
+```
+
+## Example with clap-verbosity-flag integration
+
+The log level can be configured with a command line argument, using the `clap-verbosity-flag` crate.
+Try running it with `cargo run --example verbosity -- -vv` or `cargo run --example verbosity -- -q`.
+Changing the number of `-v` or `-q` changes the log level.
+
+```rust
+#[macro_use]
+extern crate log;
+
+use clap::Parser;
+use clap_verbosity_flag::{InfoLevel, Verbosity};
+
+/// A demo of ocli with clap
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+pub struct Config {
+    /// Log level
+    #[command(flatten)]
+    pub verbose: Verbosity<InfoLevel>,
+}
+
+fn main() {
+    let config = Config::parse();
+    if let Some(level) = config.verbose.log_level() {
+        ocli::init(level).unwrap();
+    }
+    println!("this is on stdout — try to pipe it to another command like `grep` or `wc`");
     error!("log at error level on stderr");
     warn!("log at warn level on stderr");
     info!("log at info level on stderr");
