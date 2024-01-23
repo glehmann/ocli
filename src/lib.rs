@@ -64,6 +64,7 @@
 //!
 
 use ansi_term::Color;
+use is_terminal::IsTerminal;
 use log::SetLoggerError;
 
 pub const MODULE_PATH_UNKNOWN: &str = "?";
@@ -172,7 +173,7 @@ pub fn init(level: log::Level) -> Result<(), SetLoggerError> {
 
 /// Colorize a string with the color associated with the log level
 fn paint(level: log::Level, msg: &str) -> std::string::String {
-    if atty::is(atty::Stream::Stderr) {
+    if std::io::stderr().is_terminal() {
         match level {
             log::Level::Error => Color::Red.paint(msg).to_string(),
             log::Level::Warn => Color::Yellow.paint(msg).to_string(),
