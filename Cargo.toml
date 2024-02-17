@@ -6,7 +6,7 @@ authors = ["Gaëtan Lehmann <gaetan.lehmann@gmail.com>"]
 description = "A simple, opinionated logger for command line tools"
 readme = "README.md"
 repository = "https://github.com/glehmann/ocli.git"
-homepage = "https://github.com/glehmann/ocli.git"
+homepage = "https://github.com/glehmann/ocli/"
 documentation = "https://docs.rs/ocli/latest/ocli/"
 license = "MIT"
 keywords = ["terminal", "log", "logger", "logging", "cli"]
@@ -14,7 +14,7 @@ keywords = ["terminal", "log", "logger", "logging", "cli"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ansi_term = "0.12"
+anstyle = "1.0.6"
 is-terminal = "0.4.10"
 log = { version = "0.4", features = ["std"] }
 

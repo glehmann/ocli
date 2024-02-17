@@ -63,7 +63,6 @@
 //! TODO: write a small example that uses clap derive
 //!
 
-use ansi_term::Color;
 use is_terminal::IsTerminal;
 use log::SetLoggerError;
 
@@ -158,7 +157,7 @@ impl Default for Logger {
 /// extern crate ocli;
 ///
 /// fn main() {
-///     ocli::.init(log::Level::Info).unwrap();
+///     ocli::init(log::Level::Info).unwrap();
 ///
 ///     error!("This is printed to stderr, with the 'error: ' prefix");
 ///     warn!("This is printed to stderr, with the 'warn: ' prefix"");
@@ -173,15 +172,16 @@ pub fn init(level: log::Level) -> Result<(), SetLoggerError> {
 
 /// Colorize a string with the color associated with the log level
 fn paint(level: log::Level, msg: &str) -> std::string::String {
-    if std::io::stderr().is_terminal() {
+    let style = if std::io::stderr().is_terminal() {
         match level {
-            log::Level::Error => Color::Red.paint(msg).to_string(),
-            log::Level::Warn => Color::Yellow.paint(msg).to_string(),
-            log::Level::Info => msg.to_string(),
-            log::Level::Debug => Color::Blue.paint(msg).to_string(),
-            log::Level::Trace => Color::Purple.paint(msg).to_string(),
+            log::Level::Error => anstyle::AnsiColor::Red.on_default(),
+            log::Level::Warn => anstyle::AnsiColor::Yellow.on_default(),
+            log::Level::Info => anstyle::Style::new(),
+            log::Level::Debug => anstyle::AnsiColor::Blue.on_default(),
+            log::Level::Trace => anstyle::AnsiColor::Magenta.on_default(),
         }
     } else {
-        msg.to_string()
-    }
+        anstyle::Style::new()
+    };
+    format!("{}{}{}", style.render(), msg, style.render_reset())
 }
