@@ -14,7 +14,7 @@ keywords = ["terminal", "log", "logger", "logging", "cli"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anstyle = "1.0.6"
+anstyle = "1.0.7"
 is-terminal = "0.4.10"
 log = { version = "0.4", features = ["std"] }
 
