@@ -63,7 +63,8 @@
 //! TODO: write a small example that uses clap derive
 //!
 
-use is_terminal::IsTerminal;
+use std::io::IsTerminal;
+
 use log::SetLoggerError;
 
 pub const MODULE_PATH_UNKNOWN: &str = "?";
