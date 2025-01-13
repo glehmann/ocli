@@ -64,6 +64,8 @@
 //!
 
 use is_terminal::IsTerminal;
+
+use colored::Colorize;
 use log::SetLoggerError;
 
 pub const MODULE_PATH_UNKNOWN: &str = "?";
@@ -172,16 +174,17 @@ pub fn init(level: log::Level) -> Result<(), SetLoggerError> {
 
 /// Colorize a string with the color associated with the log level
 fn paint(level: log::Level, msg: &str) -> std::string::String {
-    let style = if std::io::stderr().is_terminal() {
+    let colored_string = if std::io::stderr().is_terminal() {
         match level {
-            log::Level::Error => anstyle::AnsiColor::Red.on_default(),
-            log::Level::Warn => anstyle::AnsiColor::Yellow.on_default(),
-            log::Level::Info => anstyle::Style::new(),
-            log::Level::Debug => anstyle::AnsiColor::Blue.on_default(),
-            log::Level::Trace => anstyle::AnsiColor::Magenta.on_default(),
+            log::Level::Error => msg.red(),
+            log::Level::Warn => msg.yellow(),
+            log::Level::Info => msg.normal(),
+            log::Level::Debug => msg.blue(),
+            log::Level::Trace => msg.magenta(),
         }
     } else {
-        anstyle::Style::new()
+        msg.normal()
     };
-    format!("{}{}{}", style.render(), msg, style.render_reset())
+
+    colored_string.to_string()
 }
