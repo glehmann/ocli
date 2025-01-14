@@ -63,7 +63,7 @@
 //! TODO: write a small example that uses clap derive
 //!
 
-use is_terminal::IsTerminal;
+use std::io::IsTerminal;
 
 use colored::Colorize;
 use log::SetLoggerError;

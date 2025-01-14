@@ -12,7 +12,6 @@ license = "MIT"
 keywords = ["terminal", "log", "logger", "logging", "cli"]
 
 [dependencies]
-is-terminal = "0.4.10"
 colored = "2.2.0"
 log = { version = "0.4", features = ["std"] }
 
