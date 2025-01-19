@@ -12,13 +12,9 @@ license = "MIT"
 keywords = ["terminal", "log", "logger", "logging", "cli"]
 
 [dependencies]
-colored = "2.2.0"
 log = { version = "0.4", features = ["std"] }
+termcolor = "1.4.1"
 
 [dev-dependencies]
 clap = { version = "4.5.3", features = ["derive"] }
 clap-verbosity-flag = "2.1.2"
-
-[features]
-# Disable printing with ANSI colors. This is intended for supporting older Windows terminals.
-no-color = ["colored/no-color"]

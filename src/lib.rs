@@ -24,7 +24,8 @@
 //!   to help the developer understand where a message comes from, in addition to display a larger
 //!   amount of messages.
 //! * disable all colorization in case the `stderr` is not a tty, so the output is not polluted
-//!   with unreadable characters when `stderr` is redirected to a file.
+//!   with unreadable characters when `stderr` is redirected to a file. This crate uses the
+//!   `termcolor` crate to color text, which disables colorization when `NO_COLOR` is set.
 //!
 //! ## Example with `Info` log level
 //!
@@ -63,17 +64,21 @@
 //! TODO: write a small example that uses clap derive
 //!
 
-use std::io::IsTerminal;
+use std::{
+    io::{self, IsTerminal, Write},
+    sync::Arc,
+};
 
-use colored::Colorize;
 use log::SetLoggerError;
+use termcolor::{BufferWriter, Color, ColorChoice, ColorSpec, WriteColor};
 
 pub const MODULE_PATH_UNKNOWN: &str = "?";
 pub const MODULE_LINE_UNKNOWN: &str = "?";
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug)]
 pub struct Logger {
     level: log::Level,
+    writer: Arc<BufferWriter>,
 }
 
 impl Logger {
@@ -83,6 +88,7 @@ impl Logger {
     pub fn new() -> Logger {
         Logger {
             level: log::Level::Info,
+            writer: Arc::new(BufferWriter::stderr(ColorChoice::Auto)),
         }
     }
 
@@ -100,27 +106,58 @@ impl Logger {
         log::set_boxed_logger(Box::new(self))
     }
 
-    fn log_with_level(&self, record: &log::Record) {
-        let level = record.level().to_string().to_lowercase();
-        let header = match record.level() {
-            log::Level::Info => "".to_string(),
-            _ => format!("{}: ", level),
-        };
-        let header = paint(record.level(), &header);
-        eprintln!("{}{}", header, record.args());
+    fn log_with_level(&self, record: &log::Record) -> io::Result<()> {
+        let level = record.level();
+
+        let mut buffer = self.writer.buffer();
+
+        // Set the header color
+        if let Some(color) = color(level) {
+            buffer.set_color(ColorSpec::new().set_fg(Some(color)))?;
+        }
+
+        if !matches!(level, log::Level::Info) {
+            write!(buffer, "{}: ", level.to_string().to_lowercase())?;
+        }
+
+        // Reset the color to default
+        buffer.reset()?;
+        writeln!(buffer, "{}", record.args())?;
+
+        self.writer.print(&buffer)
     }
 
-    fn log_with_trace(&self, record: &log::Record) {
+    fn log_with_trace(&self, record: &log::Record) -> io::Result<()> {
         let path = record.module_path().unwrap_or(MODULE_PATH_UNKNOWN);
         let line = if let Some(l) = record.line() {
             l.to_string()
         } else {
             MODULE_LINE_UNKNOWN.to_string()
         };
-        let level = record.level().to_string().to_lowercase();
-        let header = format!("{}({}): {}: ", path, line, level);
-        let header = paint(record.level(), &header);
-        eprintln!("{}{}", header, record.args());
+
+        let level = record.level();
+
+        let mut buffer = self.writer.buffer();
+
+        // Set the header color
+        if let Some(color) = color(level) {
+            buffer.set_color(ColorSpec::new().set_fg(Some(color)))?;
+        }
+
+        write!(
+            buffer,
+            "{}({}): {}: ",
+            path,
+            line,
+            level.to_string().to_lowercase()
+        )?;
+
+        // Reset the color to default
+        buffer.reset()?;
+
+        writeln!(buffer, "{}", record.args())?;
+
+        self.writer.print(&buffer)
     }
 }
 
@@ -132,8 +169,10 @@ impl log::Log for Logger {
     fn log(&self, record: &log::Record) {
         if self.enabled(record.metadata()) {
             match self.level {
-                log::Level::Trace => self.log_with_trace(record),
-                _ => self.log_with_level(record),
+                log::Level::Trace => self
+                    .log_with_trace(record)
+                    .expect("Failed to log with trace"),
+                _ => self.log_with_level(record).expect("Failed to log"),
             }
         }
     }
@@ -172,19 +211,17 @@ pub fn init(level: log::Level) -> Result<(), SetLoggerError> {
     Logger::new().level(level).init()
 }
 
-/// Colorize a string with the color associated with the log level
-fn paint(level: log::Level, msg: &str) -> std::string::String {
-    let colored_string = if std::io::stderr().is_terminal() {
+/// Returns the color associated with the log level
+fn color(level: log::Level) -> Option<Color> {
+    if std::io::stderr().is_terminal() {
         match level {
-            log::Level::Error => msg.red(),
-            log::Level::Warn => msg.yellow(),
-            log::Level::Info => msg.normal(),
-            log::Level::Debug => msg.blue(),
-            log::Level::Trace => msg.magenta(),
+            log::Level::Error => Some(Color::Red),
+            log::Level::Warn => Some(Color::Yellow),
+            log::Level::Info => None,
+            log::Level::Debug => Some(Color::Blue),
+            log::Level::Trace => Some(Color::Magenta),
         }
     } else {
-        msg.normal()
-    };
-
-    colored_string.to_string()
+        None
+    }
 }
