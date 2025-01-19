@@ -169,8 +169,10 @@ impl log::Log for Logger {
     fn log(&self, record: &log::Record) {
         if self.enabled(record.metadata()) {
             match self.level {
-                log::Level::Trace => self.log_with_trace(record).unwrap(),
-                _ => self.log_with_level(record).unwrap(),
+                log::Level::Trace => self
+                    .log_with_trace(record)
+                    .expect("Failed to log with trace"),
+                _ => self.log_with_level(record).expect("Failed to log"),
             }
         }
     }
