@@ -37,7 +37,7 @@ amount of messages.
 ### disable all colorization in case the `stderr` is not a tty or when requested by `NO_COLOR`
 
 so the output is not polluted with unreadable characters when `stderr` is redirected to a file.
-This crate uses the `colored` crate to color text, which disables colorization when `NO_COLOR` is set.
+This crate uses the `termcolor` crate to color text, which disables colorization when `NO_COLOR` is set.
 
 ## Example with `Info` log level
 
