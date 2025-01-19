@@ -75,7 +75,7 @@ use termcolor::{BufferWriter, Color, ColorChoice, ColorSpec, WriteColor};
 pub const MODULE_PATH_UNKNOWN: &str = "?";
 pub const MODULE_LINE_UNKNOWN: &str = "?";
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Logger {
     level: log::Level,
     writer: Arc<BufferWriter>,
@@ -112,7 +112,9 @@ impl Logger {
         let mut buffer = self.writer.buffer();
 
         // Set the header color
-        buffer.set_color(ColorSpec::new().set_fg(Some(color(level))))?;
+        if let Some(color) = color(level) {
+            buffer.set_color(ColorSpec::new().set_fg(Some(color)))?;
+        }
 
         if !matches!(level, log::Level::Info) {
             write!(buffer, "{}: ", level.to_string().to_lowercase())?;
@@ -138,7 +140,9 @@ impl Logger {
         let mut buffer = self.writer.buffer();
 
         // Set the header color
-        buffer.set_color(ColorSpec::new().set_fg(Some(color(level))))?;
+        if let Some(color) = color(level) {
+            buffer.set_color(ColorSpec::new().set_fg(Some(color)))?;
+        }
 
         write!(
             buffer,
@@ -206,16 +210,16 @@ pub fn init(level: log::Level) -> Result<(), SetLoggerError> {
 }
 
 /// Returns the color associated with the log level
-fn color(level: log::Level) -> Color {
+fn color(level: log::Level) -> Option<Color> {
     if std::io::stderr().is_terminal() {
         match level {
-            log::Level::Error => Color::Red,
-            log::Level::Warn => Color::Yellow,
-            log::Level::Info => Color::White,
-            log::Level::Debug => Color::Blue,
-            log::Level::Trace => Color::Magenta,
+            log::Level::Error => Some(Color::Red),
+            log::Level::Warn => Some(Color::Yellow),
+            log::Level::Info => None,
+            log::Level::Debug => Some(Color::Blue),
+            log::Level::Trace => Some(Color::Magenta),
         }
     } else {
-        Color::White
+        None
     }
 }
