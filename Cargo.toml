@@ -12,7 +12,7 @@ license = "MIT"
 keywords = ["terminal", "log", "logger", "logging", "cli"]
 
 [dependencies]
-colored = "2.2.0"
+colored = "3.0.0"
 log = { version = "0.4", features = ["std"] }
 
 [dev-dependencies]
