@@ -17,4 +17,4 @@ termcolor = "1.4.1"
 
 [dev-dependencies]
 clap = { version = "4.5.26", features = ["derive"] }
-clap-verbosity-flag = "2.1.2"
+clap-verbosity-flag = "3.0.2"
