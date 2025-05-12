@@ -16,5 +16,5 @@ log = { version = "0.4", features = ["std"] }
 termcolor = "1.4.1"
 
 [dev-dependencies]
-clap = { version = "4.5.37", features = ["derive"] }
+clap = { version = "4.5.38", features = ["derive"] }
 clap-verbosity-flag = "3.0.2"
