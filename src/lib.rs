@@ -23,9 +23,10 @@
 //!   messages, even if they are not at the `Trace` log level. The `Trace` log level is used
 //!   to help the developer understand where a message comes from, in addition to display a larger
 //!   amount of messages.
-//! * disable all colorization in case the `stderr` is not a tty, so the output is not polluted
-//!   with unreadable characters when `stderr` is redirected to a file. This crate uses the
-//!   `termcolor` crate to color text, which disables colorization when `NO_COLOR` is set.
+//! * disables all colorization in case the `stderr` is not a tty, so the output is not polluted
+//!   with unreadable characters when `stderr` is redirected to a file. This crates disables
+//!   colorization when the `NO_COLOR` environment is set, and force it when `FORCE_COLOR` is set.
+//!   The colorization is disabled when both environment variables are set.
 //!
 //! ## Example with `Info` log level
 //!
@@ -65,6 +66,7 @@
 //!
 
 use std::{
+    env,
     io::{self, IsTerminal, Write},
     sync::Arc,
 };
@@ -86,15 +88,26 @@ impl Logger {
     ///
     /// The default level is Info.
     pub fn new() -> Logger {
+        let no_color = env::var("NO_COLOR");
+        let force_color = env::var("FORCE_COLOR");
+        let color_choice = if no_color.is_ok() && !no_color.unwrap().is_empty() {
+            ColorChoice::Never
+        } else if force_color.is_ok() && !force_color.unwrap().is_empty() {
+            ColorChoice::Always
+        } else if std::io::stderr().is_terminal() {
+            ColorChoice::Auto
+        } else {
+            ColorChoice::Never
+        };
         Logger {
             level: log::Level::Info,
-            writer: Arc::new(BufferWriter::stderr(ColorChoice::Auto)),
+            writer: Arc::new(BufferWriter::stderr(color_choice)),
         }
     }
 
     /// Explicitly sets the log level.
-    pub fn level(mut self, l: log::Level) -> Self {
-        self.level = l;
+    pub fn level(mut self, level: log::Level) -> Self {
+        self.level = level;
         self
     }
 
@@ -213,15 +226,11 @@ pub fn init(level: log::Level) -> Result<(), SetLoggerError> {
 
 /// Returns the color associated with the log level
 fn color(level: log::Level) -> Option<Color> {
-    if std::io::stderr().is_terminal() {
-        match level {
-            log::Level::Error => Some(Color::Red),
-            log::Level::Warn => Some(Color::Yellow),
-            log::Level::Info => None,
-            log::Level::Debug => Some(Color::Blue),
-            log::Level::Trace => Some(Color::Magenta),
-        }
-    } else {
-        None
+    match level {
+        log::Level::Error => Some(Color::Red),
+        log::Level::Warn => Some(Color::Yellow),
+        log::Level::Info => None,
+        log::Level::Debug => Some(Color::Blue),
+        log::Level::Trace => Some(Color::Magenta),
     }
 }
