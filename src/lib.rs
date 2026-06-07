@@ -137,7 +137,7 @@ impl Logger {
             if let Some(color) = color(level) {
                 w.set_color(ColorSpec::new().set_fg(Some(color)))?;
             }
-            write!(w, "{}{}\n", prefix, line)?;
+            writeln!(w, "{}{}", prefix, line)?;
             w.reset()?;
         }
 
@@ -166,7 +166,7 @@ impl Logger {
             if let Some(color) = color(level) {
                 w.set_color(ColorSpec::new().set_fg(Some(color)))?;
             }
-            write!(w, "{}{}\n", prefix, line)?;
+            writeln!(w, "{}{}", prefix, line)?;
             w.reset()?;
         }
 
