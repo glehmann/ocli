@@ -1,6 +1,6 @@
 [package]
 name = "ocli"
-version = "0.3.0"
+version.workspace = true
 edition = "2021"
 authors = ["Gaëtan Lehmann <gaetan.lehmann@gmail.com>"]
 description = "A simple, opinionated logger for command line tools"
@@ -10,6 +10,12 @@ homepage = "https://github.com/glehmann/ocli/"
 documentation = "https://docs.rs/ocli/latest/ocli/"
 license = "MIT"
 keywords = ["terminal", "log", "logger", "logging", "cli"]
+
+[workspace]
+members = ["xtask"]
+
+[workspace.package]
+version = "0.3.0"
 
 [dependencies]
 log = { version = "0.4", features = ["std"] }
