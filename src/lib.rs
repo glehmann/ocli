@@ -110,14 +110,37 @@ impl Logger {
 
     fn format_default(&self, record: &log::Record, w: &mut dyn WriteColor) -> io::Result<()> {
         let level = record.level();
-        if let Some(color) = color(level) {
-            w.set_color(ColorSpec::new().set_fg(Some(color)))?;
+        let msg = format!("{}", record.args());
+
+        if matches!(level, log::Level::Info) {
+            w.reset()?;
+            write!(w, "{}", msg)?;
+            return if msg.ends_with('\n') {
+                Ok(())
+            } else {
+                writeln!(w)
+            };
         }
-        if !matches!(level, log::Level::Info) {
-            write!(w, "{}: ", level.to_string().to_lowercase())?;
+
+        let prefix = format!("{}: ", level.to_string().to_lowercase());
+
+        if msg.is_empty() {
+            if let Some(color) = color(level) {
+                w.set_color(ColorSpec::new().set_fg(Some(color)))?;
+            }
+            write!(w, "{}", prefix)?;
+            w.reset()?;
+            return writeln!(w);
         }
-        w.reset()?;
-        writeln!(w, "{}", record.args())?;
+
+        for line in msg.lines() {
+            if let Some(color) = color(level) {
+                w.set_color(ColorSpec::new().set_fg(Some(color)))?;
+            }
+            write!(w, "{}{}\n", prefix, line)?;
+            w.reset()?;
+        }
+
         Ok(())
     }
 
@@ -127,18 +150,26 @@ impl Logger {
             .line()
             .map_or_else(|| MODULE_LINE_UNKNOWN.to_string(), |l| l.to_string());
         let level = record.level();
-        if let Some(color) = color(level) {
-            w.set_color(ColorSpec::new().set_fg(Some(color)))?;
+        let msg = format!("{}", record.args());
+        let prefix = format!("{}({}): {}: ", path, line, level.to_string().to_lowercase());
+
+        if msg.is_empty() {
+            if let Some(color) = color(level) {
+                w.set_color(ColorSpec::new().set_fg(Some(color)))?;
+            }
+            write!(w, "{}", prefix)?;
+            w.reset()?;
+            return writeln!(w);
         }
-        write!(
-            w,
-            "{}({}): {}: ",
-            path,
-            line,
-            level.to_string().to_lowercase()
-        )?;
-        w.reset()?;
-        writeln!(w, "{}", record.args())?;
+
+        for line in msg.lines() {
+            if let Some(color) = color(level) {
+                w.set_color(ColorSpec::new().set_fg(Some(color)))?;
+            }
+            write!(w, "{}{}\n", prefix, line)?;
+            w.reset()?;
+        }
+
         Ok(())
     }
 }
@@ -384,6 +415,21 @@ mod tests {
     }
 
     #[test]
+    fn format_error_multiline() {
+        let out = format_default(log::Level::Error, "line1\nline2\nline3", Some("m"), Some(1));
+        assert_eq!(
+            String::from_utf8(out).unwrap(),
+            "error: line1\nerror: line2\nerror: line3\n"
+        );
+    }
+
+    #[test]
+    fn format_info_multiline() {
+        let out = format_default(log::Level::Info, "line1\nline2\nline3", Some("m"), Some(1));
+        assert_eq!(String::from_utf8(out).unwrap(), "line1\nline2\nline3\n");
+    }
+
+    #[test]
     fn format_default_contains_ansi_for_non_info() {
         let logger = Logger::new();
         let mut buf = BufferWriter::stderr(ColorChoice::Always).buffer();
@@ -451,6 +497,15 @@ mod tests {
         let out = format_trace(log::Level::Warn, "warn", None, Some(5));
         let s = String::from_utf8(out).unwrap();
         assert!(s.starts_with("?(5): warn: warn\n"), "got: {:?}", s);
+    }
+
+    #[test]
+    fn trace_format_multiline() {
+        let out = format_trace(log::Level::Error, "line1\nline2", Some("mod"), Some(5));
+        assert_eq!(
+            String::from_utf8(out).unwrap(),
+            "mod(5): error: line1\nmod(5): error: line2\n"
+        );
     }
 
     #[test]
