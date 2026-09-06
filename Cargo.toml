@@ -4,7 +4,6 @@ version.workspace = true
 edition = "2021"
 authors = ["Gaëtan Lehmann <gaetan.lehmann@gmail.com>"]
 description = "A simple, opinionated logger for command line tools"
-readme = "README.md"
 repository = "https://github.com/glehmann/ocli.git"
 homepage = "https://github.com/glehmann/ocli/"
 documentation = "https://docs.rs/ocli/latest/ocli/"
